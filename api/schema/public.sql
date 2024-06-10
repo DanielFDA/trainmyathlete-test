@@ -43,11 +43,25 @@ create table if not exists public.tasks (
   created_at timestamp without time zone not null
 );
 
-alter table public.tasks add column completed_at timestamp without time zone;
+-- Conditional column additions
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_name='tasks' and column_name='completed_at') then
+    alter table public.tasks add column completed_at timestamp without time zone;
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_name='tasks' and column_name='due_date') then
+    alter table public.tasks add column due_date date;
+  end if;
+end $$;
 
 comment on table public.tasks is E'@omit update,delete';
 comment on column public.tasks.created_at is E'@omit create';
 comment on column public.tasks.completed_at is E'@omit create';
+comment on column public.tasks.due_date is E'@omit create';
 
 grant all on table public.tasks to anonymous;
 
